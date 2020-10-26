@@ -1,6 +1,6 @@
 
 #define SUPPORT_4532              //LGDP4532 +120 bytes.  thanks Leodino
-
+// saya menggunakan ID 4532 untuk arduino mega 2560. Step berikutnya dalah mencoba dengan Xirka IoT Board - Bagas Budhi P
 
 #include "MCUFRIEND_kbv.h"
 #if defined(USE_SERIAL)
