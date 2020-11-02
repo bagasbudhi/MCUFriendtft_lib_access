@@ -30,7 +30,7 @@
 
 #include <Adafruit_GFX.h>
 #if defined(__arm__) && !defined(TEENSYDUINO)
-//#include <avr/dtostrf.h>
+#include <avr/dtostrf.h>
 #endif
 
 #include <FreeDefaultFonts.h>
