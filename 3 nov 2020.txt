@@ -1,0 +1,30 @@
+Coba berbagai versi library MCUfriend
+
+Ubah kelas reset nya
+
+error panjang, banyak yang tidak ter declare
+
+masalah di pin analog di file mcufriend.h 
+
+alternatif:
+1.
+masukin pinMode (A0, Output)
+digitalWrite (A0, High)
+
+2.
+balikin ke default library dimana ada if else untuk pin analognya. terus baru declare
+
+
+pake mcufriend special device untuk sam3x8e
+
+pengen pin analog i nol kan
+========================
+satu AVR satu SAM
+declare variable tidak berfungsi/terbaca
+
+#define BMASK         B10110000 //D13, D11, D10
+#define GMASK         0x20      //D4
+#define HMASK         0x78      //D6, D7, D8, D9
+
+====================
+shield.h tidak terbaca oleh mcufriend_kbv.cpp
