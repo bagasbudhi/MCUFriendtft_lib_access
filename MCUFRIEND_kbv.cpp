@@ -7,7 +7,8 @@
 //=================================================
 
 #include "MCUFRIEND_kbv.h"
-#include "utility/mcufriend_shield.h"
+//#include "utility/mcufriend_shield.h"
+
 //#if defined(USE_SERIAL)
 //#include "utility/mcufriend_shield.h"
 // uint8_t running;
@@ -18,6 +19,19 @@
 //#else
 //#include "utility/mcufriend_shield.h"
 //#endif
+
+
+#if defined(USE_SERIAL)
+#include "utility/mcufriend_serial.h"
+ //uint8_t running;
+#elif defined(__MBED__)
+#include "utility/mcufriend_mbed.h"
+#elif defined(__CC_ARM) || defined(__CROSSWORKS_ARM)
+#include "utility/mcufriend_keil.h"
+#else
+#include "utility/mcufriend_shield.h"
+#endif
+
 
 #define MIPI_DCS_REV1   (1<<0)
 #define AUTO_READINC    (1<<1)
@@ -79,11 +93,11 @@ void MCUFRIEND_kbv::reset(void)
     RD_IDLE;
     WR_IDLE;
     RESET_IDLE;
-    delay(800);
+    delay(50);
     RESET_ACTIVE;
-    delay(1500);
+    delay(100);
     RESET_IDLE;
-    delay(800);
+    delay(100);
 	WriteCmdData(0xB0, 0x0000);   //R61520 needs this to read ID
 }
 
@@ -1855,7 +1869,7 @@ case 0x4532:    // thanks Leodino
 #ifdef SUPPORT_8347A
     case 0x8347:
         _lcd_capable = REV_SCREEN | MIPI_DCS_REV1 | MV_AXIS;
-        // AN.01 The reference setting of CMO 3.2â€ Panel
+        // AN.01 The reference setting of CMO 3.2” Panel
         static const uint8_t HX8347A_CMO32_regValues[] PROGMEM = {
             //  VENDOR Gamma for 3.2"
             (0x46), 12, 0xA4, 0x53, 0x00, 0x44, 0x04, 0x67, 0x33, 0x77, 0x12, 0x4C, 0x46, 0x44,
@@ -1903,7 +1917,7 @@ case 0x4532:    // thanks Leodino
             (0xFE), 1, 0x5A,    // For ESD protection
             (0x57), 1, 0x00,    // TEST_Mode=0: exit TEST mode
         };
-        // AN.01 The reference setting of CMO 2.4â€ Panel
+        // AN.01 The reference setting of CMO 2.4” Panel
         static const uint8_t HX8347A_CMO24_regValues[] PROGMEM = {
             //  VENDOR Gamma for 2.4"
             (0x46), 12, 0x94, 0x41, 0x00, 0x33, 0x23, 0x45, 0x44, 0x77, 0x12, 0xCC, 0x46, 0x82,
@@ -2430,9 +2444,9 @@ case 0x4532:    // thanks Leodino
         _lcd_capable = REV_SCREEN | READ_BGR;
         static const uint16_t ILI9326_CPT28_regValues[] PROGMEM = {
 //************* Start Initial Sequence **********//
-         0x0702, 0x3008,     //  Set internal timing, donâ€™t change this value
-         0x0705, 0x0036,     //  Set internal timing, donâ€™t change this value
-         0x070B, 0x1213,     //  Set internal timing, donâ€™t change this value
+         0x0702, 0x3008,     //  Set internal timing, don’t change this value
+         0x0705, 0x0036,     //  Set internal timing, don’t change this value
+         0x070B, 0x1213,     //  Set internal timing, don’t change this value
          0x0001, 0x0100,     //  set SS and SM bit
          0x0002, 0x0100,     //  set 1 line inversion
          0x0003, 0x1030,     //  set GRAM write direction and BGR=1.
@@ -3010,115 +3024,3 @@ case 0x4532:    // thanks Leodino
 	}
 #endif
 }
-
-
-//============================tambahan==========================
-
-//static inline uint32_t map_8(uint32_t d)
-//{
-//    return (
-//               0
-//               | ((d & (1 << 0)) << (LCD_D0 - 0))
-//               | ((d & (1 << 1)) << (LCD_D1 - 1))
-//               | ((d & (1 << 2)) << (LCD_D2 - 2))
-//               | ((d & (1 << 3)) << (LCD_D3 - 3))
-//               | ((d & (1 << 4)) << (LCD_D4 - 4))
-//               | ((d & (1 << 5)) << (LCD_D5 - 5))
-//               | ((d & (1 << 6)) << (LCD_D6 - 6))
-//               | ((d & (1 << 7)) << (LCD_D7 - 7))
-//           );
-//}
-//
-//static inline uint8_t map_32(uint32_t d)
-//{
-//    return (
-//               0
-//               | ((d & (1 << LCD_D0)) >> (LCD_D0 - 0))
-//               | ((d & (1 << LCD_D1)) >> (LCD_D1 - 1))
-//               | ((d & (1 << LCD_D2)) >> (LCD_D2 - 2))
-//               | ((d & (1 << LCD_D3)) >> (LCD_D3 - 3))
-//               | ((d & (1 << LCD_D4)) >> (LCD_D4 - 4))
-//               | ((d & (1 << LCD_D5)) >> (LCD_D5 - 5))
-//               | ((d & (1 << LCD_D6)) >> (LCD_D6 - 6))
-//               | ((d & (1 << LCD_D7)) >> (LCD_D7 - 7))
-//           );
-//}
-//
-//static inline void write_8(uint16_t data)
-//{
-//    GPIO.out_w1tc = map_8(0xFF);  //could define once as DMASK
-//    GPIO.out_w1ts = map_8(data);
-//}
-//
-//static inline uint8_t read_8()
-//{
-//    return map_32(GPIO.in);
-//}
-//static void setWriteDir()
-//{
-//    pinMode(LCD_D0, OUTPUT);
-//    pinMode(LCD_D1, OUTPUT);
-//    pinMode(LCD_D2, OUTPUT);
-//    pinMode(LCD_D3, OUTPUT);
-//    pinMode(LCD_D4, OUTPUT);
-//    pinMode(LCD_D5, OUTPUT);
-//    pinMode(LCD_D6, OUTPUT);
-//    pinMode(LCD_D7, OUTPUT);
-//}
-//
-//static void setReadDir()
-//{
-//    pinMode(LCD_D0, INPUT);
-//    pinMode(LCD_D1, INPUT);
-//    pinMode(LCD_D2, INPUT);
-//    pinMode(LCD_D3, INPUT);
-//    pinMode(LCD_D4, INPUT);
-//    pinMode(LCD_D5, INPUT);
-//    pinMode(LCD_D6, INPUT);
-//    pinMode(LCD_D7, INPUT);
-//}
-//
-//#define WRITE_DELAY { }
-//#define READ_DELAY  { }
-//
-//#define write8(x)     { write_8(x); WRITE_DELAY; WR_STROBE; }
-//#define write16(x)    { uint8_t h = (x)>>8, l = x; write8(h); write8(l); }
-//#define READ_8(dst)   { RD_STROBE; READ_DELAY; dst = read_8(); RD_IDLE; }
-//#define READ_16(dst)  { uint8_t hi; READ_8(hi); READ_8(dst); dst |= (hi << 8); }
-//
-//#define PIN_LOW(p, b)        (digitalWrite(b, LOW))
-//#define PIN_HIGH(p, b)       (digitalWrite(b, HIGH))
-//#define PIN_OUTPUT(p, b)     (pinMode(b, OUTPUT))
-//
-////#else
-////#error MCU unsupported
-////#endif                          // regular UNO shields on Arduino boards
-//
-////#endif                          //!defined(USE_SPECIAL) || defined (USE_SPECIAL_FAIL)
-//
-//#define RD_ACTIVE  PIN_LOW(RD_PORT, RD_PIN)
-//#define RD_IDLE    PIN_HIGH(RD_PORT, RD_PIN)
-//#define RD_OUTPUT  PIN_OUTPUT(RD_PORT, RD_PIN)
-//#define WR_ACTIVE  PIN_LOW(WR_PORT, WR_PIN)
-//#define WR_IDLE    PIN_HIGH(WR_PORT, WR_PIN)
-//#define WR_OUTPUT  PIN_OUTPUT(WR_PORT, WR_PIN)
-//#define CD_COMMAND PIN_LOW(CD_PORT, CD_PIN)
-//#define CD_DATA    PIN_HIGH(CD_PORT, CD_PIN)
-//#define CD_OUTPUT  PIN_OUTPUT(CD_PORT, CD_PIN)
-//#define CS_ACTIVE  PIN_LOW(CS_PORT, CS_PIN)
-//#define CS_IDLE    PIN_HIGH(CS_PORT, CS_PIN)
-//#define CS_OUTPUT  PIN_OUTPUT(CS_PORT, CS_PIN)
-//#define RESET_ACTIVE  PIN_LOW(RESET_PORT, RESET_PIN)
-//#define RESET_IDLE    PIN_HIGH(RESET_PORT, RESET_PIN)
-//#define RESET_OUTPUT  PIN_OUTPUT(RESET_PORT, RESET_PIN)
-//
-// // General macros.   IOCLR registers are 1 cycle when optimised.
-//#define WR_STROBE { WR_ACTIVE; WR_IDLE; }       //PWLW=TWRL=50ns
-//#define RD_STROBE RD_IDLE, RD_ACTIVE, RD_ACTIVE, RD_ACTIVE      //PWLR=TRDL=150ns, tDDR=100ns
-//
-//#if !defined(GPIO_INIT)
-//#define GPIO_INIT()
-//#endif
-//#define CTL_INIT()   { GPIO_INIT(); RD_OUTPUT; WR_OUTPUT; CD_OUTPUT; CS_OUTPUT; RESET_OUTPUT; }
-//#define WriteCmd(x)  { CD_COMMAND; write16(x); CD_DATA; }
-//#define WriteData(x) { write16(x); }

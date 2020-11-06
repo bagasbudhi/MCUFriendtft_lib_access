@@ -1,4 +1,4 @@
-#define USE_SPECIAL             //check for custom drivers
+//#define USE_SPECIAL             //check for custom drivers
 
 #define WR_ACTIVE2  {WR_ACTIVE; WR_ACTIVE;}
 #define WR_ACTIVE4  {WR_ACTIVE2; WR_ACTIVE2;}
@@ -51,7 +51,39 @@
 #define PIN_HIGH(p, b)       (p) |= (1<<(b))
 #define PIN_OUTPUT(p, b)     *(&p-1) |= (1<<(b))
 
+
+//################################### ARDUNESIA ################################ Bagas Budhi Permana (05/11/20)
+#elif defined(XST_X1_02)
+// nanti diisi pin
+#define RD_PORT CMSDK_GPIO0->DATAOUT
+#define RD_PIN  0
+#define WR_PORT CMSDK_GPIO0->DATAOUT
+#define WR_PIN  1
+#define CD_PORT CMSDK_GPIO0->DATAOUT
+#define CD_PIN  2
+#define CS_PORT CMSDK_GPIO0->DATAOUT
+#define CS_PIN  3
+#define RESET_PORT CMSDK_GPIO0->DATAOUT
+#define RESET_PIN  4
+
+#define BMASK         0x03              //more intuitive style for mixed Ports
+#define DMASK         0xFC              //does exactly the same as previous
+#define write_8(x)    { CMSDK_GPIO9->DATAOUT = (CMSDK_GPIO9->DATAOUT & ~BMASK) | ((x) & BMASK); CMSDK_GPIO8->DATAOUT = (CMSDK_GPIO8->DATAOUT & ~DMASK) | ((x) & DMASK); }
+#define read_8()      ( (CMSDK_GPIO9->DATA & BMASK) | (CMSDK_GPIO8->DATA & DMASK) )
+#define setWriteDir() { CMSDK_GPIO9->OUTENABLESET |=  BMASK; CMSDK_GPIO8->OUTENABLESET |= DMASK; }
+#define setReadDir()  { CMSDK_GPIO9->OUTENABLECLR |=  BMASK; CMSDK_GPIO8->OUTENABLECLR |= DMASK; }
+#define write8(x)     { write_8(x); WR_STROBE; }
+#define write16(x)    { uint8_t h = (x)>>8, l = x; write8(h); write8(l); }
+#define READ_8(dst)   { RD_STROBE; dst = read_8(); RD_IDLE; }
+#define READ_16(dst)  { uint8_t hi; READ_8(hi); READ_8(dst); dst |= (hi << 8); }
+
+#define PIN_LOW(p, b)        (p) &= ~(1<<(b))
+#define PIN_HIGH(p, b)       (p) |= (1<<(b))
+#define PIN_OUTPUT(p, b)     *(&p-1) |= (1<<(b))
+
+
 //################################### MEGA2560 ##############################
+//#elif defined(__SAM3X8E__) 
 #elif defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1280__)       //regular UNO shield on MEGA2560
 //LCD pins  |D7 |D6 |D5 |D4 |D3 |D2 |D1 |D0 | |RD |WR |RS |CS |RST|
 //AVR   pin |PH4|PH3|PE3|PG5|PE5|PE4|PH6|PH5| |PF0|PF1|PF2|PF3|PF4|
@@ -419,7 +451,7 @@ void write_8(uint8_t val)
  // Shield Control macros.
 #define PIN_LOW(port, pin)    (port)->PIO_CODR = (1<<(pin))
 #define PIN_HIGH(port, pin)   (port)->PIO_SODR = (1<<(pin))
-#define PIN_OUTPUT(port, pin) (port)->PIO_OER = (1<<(pin))
+#define PIN_OUTPUT(port, pin) (port)->PIO_OER = (1<<(pin))    
 
 //################################### LEONARDO ##############################
 #elif defined(__AVR_ATmega32U4__)       //regular UNO shield on Leonardo
@@ -1091,7 +1123,7 @@ static void setReadDir()
 #define PIN_OUTPUT(p, b)     (pinMode(b, OUTPUT))
 
 #else
-//#error MCU unsupported
+#error MCU unsupported
 #endif                          // regular UNO shields on Arduino boards
 
 #endif                          //!defined(USE_SPECIAL) || defined (USE_SPECIAL_FAIL)
